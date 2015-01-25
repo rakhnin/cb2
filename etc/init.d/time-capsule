@@ -1,0 +1,65 @@
+
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: time-capsule
+# Required-Start: $local_fs $remote_fs
+# Required-Stop: $local_fs $remote_fs
+# Should-Start: $network
+# Should-Stop: $network
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: connect time-capsule
+# Description: connect time-capsule
+### END INIT INFO
+
+#apt-get install cifs-utils smbclient
+
+TIMECAPSULE_IP="192.168.0.100"
+TIMECAPSULE_VOLUME="/storage"
+TIMECAPSULE_PASSWORD=""
+MOUNT_POINT=/media/storage
+
+TIMECAPSULE_PATH="//$TIMECAPSULE_IP$TIMECAPSULE_VOLUME"
+
+start() {
+  CHECK_TIMECAPSULE=`smbclient --no-pass -L $TIMECAPSULE_IP 2>&1 > /dev/null | grep -m1 -i apple`
+  if [[ "$CHECK_TIMECAPSULE" =~ "Apple" ]] ;then
+    if [ ! -d "$MOUNT_POINT" ] ;then
+    mkdir $MOUNT_POINT
+    fi
+    echo "mount.cifs $TIMECAPSULE_PATH $MOUNT_POINT -o pass=$TIMECAPSULE_PASSWORD,file_mode=0777,dir_mode=0777,sec=ntlm" | /bin/bash
+  fi
+}
+
+stop() {
+  umount $MOUNT_POINT
+}
+
+status() {
+  IS_MOUNTED=`mount 2> /dev/null | grep "$MOUNT_POINT" | cut -d' ' -f3`
+  if [[ "$IS_MOUNTED" ]] ;then
+    echo "time-capsule is mounted"
+  else
+    echo "time-capsule is not mounted"
+  fi
+}
+case "$1" in
+  start)
+    start
+  ;;
+  stop)
+    stop
+  ;;
+  restart|reload|force-reload)
+    stop
+    start
+  ;;
+  status)
+    status
+  ;;
+  *)
+    echo "Usage: /etc/init.d/time-capsule {start|stop|reload|force-reload|restart|status}"
+    exit 1
+esac
+
+exit 0

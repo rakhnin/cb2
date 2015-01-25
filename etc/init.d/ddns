@@ -1,0 +1,45 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          itd
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: ddns
+# Description:       update dynamic dns
+### END INIT INFO
+
+# http://freedns.afraid.org
+# apr-get install curl openssl
+
+IPPATH=/var/log/curIp
+TEMP=/var/log/tempIp
+KEY=""
+
+start() {
+
+  curl http://ip.changeip.com > $TEMP
+
+  curIPmd5=$(openssl dgst -md5 $IPPATH | sed 's/(.*)\= \(.*\)/\1/g')
+  tmpIPmd5=$(openssl dgst -md5 $TEMP | sed 's/(.*)\= \(.*\)/\1/g')
+
+  if [ "$curIPmd5" = "$tmpIPmd5" ]
+  then
+    cp $TEMP $IPPATH
+  else
+    curl -s http://freedns.afraid.org/dynamic/update.php?$KEY
+    cp $TEMP $IPPATH
+  fi
+
+}
+
+case "$1" in
+  start)
+    start
+  ;;
+  *)
+    echo "Usage: /etc/init.d/ddns {start}"
+    exit 1
+esac
+
+exit 0
