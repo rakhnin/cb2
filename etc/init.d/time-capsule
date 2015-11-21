@@ -27,7 +27,7 @@ start() {
     if [ ! -d "$MOUNT_POINT" ] ;then
     mkdir $MOUNT_POINT
     fi
-    echo "mount.cifs $TIMECAPSULE_PATH $MOUNT_POINT -o pass=$TIMECAPSULE_PASSWORD,file_mode=0777,dir_mode=0777,sec=ntlm" | /bin/bash
+    echo "mount.cifs $TIMECAPSULE_PATH $MOUNT_POINT -o pass=$TIMECAPSULE_PASSWORD,file_mode=0777,dir_mode=0777,sec=ntlm,iocharset=utf8" | /bin/bash
   fi
 }
 
